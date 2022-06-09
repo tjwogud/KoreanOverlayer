@@ -20,9 +20,16 @@ namespace KoreanOverlayer
             {
                 if (value)
                 {
-                    harmony.Patch(UnityModManager.modEntries.Find(entry => entry.Info.Id == "Overlayer").Assembly.GetType("Overlayer.Main").GetMethod("OnGUI"), new HarmonyMethod(typeof(Main), "OnGUIPrefix"), new HarmonyMethod(typeof(Main), "OnGUIPostfix"));
-                    harmony.Patch(AccessTools.Method(typeof(GUILayout), "DoTextField"), new HarmonyMethod(typeof(Main), "DoTextFieldPrefix"), new HarmonyMethod(typeof(Main), "DoTextFieldPostfix"));
-                    harmony.Patch(AccessTools.Method(typeof(GUIContent), "Temp", new Type[] { typeof(string) }), prefix: new HarmonyMethod(typeof(Main), "TempPrefix"));
+                    harmony.Patch(UnityModManager.modEntries.Find(entry => entry.Info.Id == "Overlayer").Assembly.GetType("Overlayer.Main").GetMethod("OnGUI"), 
+                        prefix: new HarmonyMethod(typeof(Main), "OnGUIPrefix"), 
+                        postfix: new HarmonyMethod(typeof(Main), "OnGUIPostfix"));
+                    harmony.Patch(AccessTools.Method(typeof(GUILayout), "DoTextField"), 
+                        prefix: new HarmonyMethod(typeof(Main), "DoTextFieldPrefix"), 
+                        postfix: new HarmonyMethod(typeof(Main), "DoTextFieldPostfix"));
+                    harmony.Patch(AccessTools.Method(typeof(UnityModManager.UI), "PopupToggleGroup", new Type[] { typeof(int), typeof(string[]), typeof(Action<int>), typeof(string), typeof(int), typeof(GUIStyle), typeof(GUILayoutOption[]) }),
+                        prefix: new HarmonyMethod(typeof(Main), "PopupToggleGroupPrefix"));
+                    harmony.Patch(AccessTools.Method(typeof(GUIContent), "Temp", new Type[] { typeof(string) }), 
+                        prefix: new HarmonyMethod(typeof(Main), "TempPrefix"));
                 }
                 else
                     harmony.UnpatchAll();
@@ -52,6 +59,16 @@ namespace KoreanOverlayer
         public static void DoTextFieldPostfix(bool __state)
         {
             patch = __state;
+        }
+
+        public static void PopupToggleGroupPrefix(string[] values, ref string title) {
+            {
+                for (int i = 0; i < values.Length; i++)
+                    values[i] = Localizations.Get(values[i], out string value) ? value : values[i];
+            }
+            {
+                title = Localizations.Get(title, out string value) ? value : title;
+            }
         }
 
         public static void TempPrefix(ref string t)

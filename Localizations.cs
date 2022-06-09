@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine.Networking;
 
@@ -23,7 +24,15 @@ namespace KoreanOverlayer
 
         public static bool Get(string key, out string value)
         {
-            return localizations.TryGetValue(key, out value);
+            value = null;
+            foreach (var pair in localizations)
+            {
+                if (pair.Key == key)
+                    value = pair.Value;
+                else if (pair.Key.StartsWith("*") && pair.Value.StartsWith("*") && key.EndsWith(pair.Key.Substring(1)))
+                    value = key.Substring(0, key.Length - pair.Key.Length + 1) + pair.Value.Substring(1);
+            }
+            return value != null;
         }
 
         private static IEnumerator Download()

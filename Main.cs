@@ -32,7 +32,7 @@ namespace KoreanOverlayer
                         prefix: new HarmonyMethod(typeof(Main), "TempPrefix"));
                 }
                 else
-                    harmony.UnpatchAll();
+                    harmony.UnpatchAll(ModEntry.Info.Id);
                 return true;
             };
             Localizations.Load();
@@ -62,6 +62,8 @@ namespace KoreanOverlayer
         }
 
         public static void PopupToggleGroupPrefix(string[] values, ref string title) {
+            if (!patch)
+                return;
             {
                 for (int i = 0; i < values.Length; i++)
                     values[i] = Localizations.Get(values[i], out string value) ? value : values[i];
